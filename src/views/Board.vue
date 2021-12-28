@@ -1,50 +1,81 @@
 <template>
   <div class="board">
-    <div class="flex flex-row items-start">
-      <div v-for="(column, index) in board.columns" :key="index" class="column">
-        <div class="flex items-center mb-2 font-bold">
-          {{ column.name }}
-        </div>
-        <div class="list-style-none">
-          <div v-for="(task, i) in column.tasks" :key="i" class="task">
-            <span class="w-full flex-shrink-0 font-bold">{{ task.name }}</span>
-            <p v-if="task.description" class="w-full flex-shrink-0 mt-1 text-sm">{{ task.description }}</p>
-          </div>
-        </div>
+    <div class="flex items-start">
+      <BoardColumn
+          v-for="(column, index) in board.columns"
+          class="column"
+          :key="`${column.name}&${index}`"
+          :column-index="index"
+          :column="column"
+      />
+      <div class="column">
+        <input
+            v-model="newColumnName"
+            type="text"
+            placeholder="+ Add new column"
+            class="px-2 -mx-2 flex-grow font-bold rounded bg-transparent outline-none"
+            @keyup.enter="addColumn"
+        >
       </div>
+    </div>
+
+    <div v-if="isTaskOpened" class="task-bg" @click.self="goToBoard">
+      <router-view/>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import BoardColumn from '@/components/BoardColumn.vue';
 
 export default {
   name: 'Board',
+
   components: {
+    BoardColumn
+  },
+
+  data() {
+    return {
+      newColumnName: ''
+    };
   },
 
   computed: {
-    ...mapState([
-      'board'
-    ])
+    board() {
+      return this.$store.state.board;
+    },
+
+    isTaskOpened() {
+      return this.$route.name === 'task';
+    }
+  },
+
+  methods: {
+    goToBoard() {
+      this.$router.push({name: 'board'});
+    },
+
+    addColumn() {
+      this.$store.commit('ADD_COLUMN', this.newColumnName);
+      this.newColumnName = '';
+    }
   }
-}
+};
 </script>
 
 <style scoped>
-.task {
-  @apply flex items-center flex-wrap shadow mb-2 py-2 px-2 rounded bg-white text-gray-800 no-underline;
-}
-.column {
-  @apply bg-gray-300 p-2 mr-4 text-left shadow rounded;
-  min-width: 350px;
-}
 .board {
   @apply p-4 bg-green-600 h-full overflow-auto;
 }
+
 .task-bg {
   @apply inset-0 absolute;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.column {
+  @apply bg-gray-300 p-2 mr-4 text-left shadow rounded;
+  min-width: 350px;
 }
 </style>
