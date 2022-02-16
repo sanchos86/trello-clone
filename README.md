@@ -1,1 +1,1 @@
-# trello clone
+# Simplified trello clone
